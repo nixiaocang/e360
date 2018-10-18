@@ -104,5 +104,5 @@ class RegionReport(ReportBase):
             2. 清洗完数据之后，到此返回数据即可，数据可以缓存在csv文件中。
         '''
         fres = ReportBase.convert_sem_data_to_pt(report_data, self.f_source, self.f_company_id, self.f_email, fmap, self.f_account)
-        fres.to_csv("/root/work/csv/%s.csv" % method)
+        fres.to_csv("csv/%s.csv" % method)
         return 2000, "OK"
