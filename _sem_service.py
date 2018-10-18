@@ -51,13 +51,13 @@ class E360SemService(object):
         return json.loads(r.body.decode("utf-8"))
 
     async def auth_account(self, request_body=None):
-        return await self.__get_access_token()
+        return await self.get_access_token()
 
     async def get_report_data(self, accessToken, method, request_body=None):
         return await self.__execute(service="report", accessToken=accessToken, method=method, request_body=request_body)
 
     async def get_keyword(self, accessToken, request_body=None):
-        return await self.__execute(service="keyword", method="getInfoByIdList", request_body=request_body)
+        return await self.__execute(service="keyword", accessToken=accessToken, method="getInfoByIdList", request_body=request_body)
 
 def aes_encrypt(apiSecret, passwd):
     plaintext = hashlib.md5(passwd.encode(encoding="UTF-8")).hexdigest()

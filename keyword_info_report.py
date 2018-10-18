@@ -2,9 +2,13 @@ import asyncio
 import logging
 import logging.config
 import time
+import json
 import datetime
+import pandas as pd
 from _sem_service import E360SemService
 from _report_base import ReportBase
+import warnings
+warnings.filterwarnings('ignore')
 
 logger = logging.getLogger()
 
@@ -104,13 +108,13 @@ class KeywordInfoReport(ReportBase):
                 ttdf = tdf[tdf['type']==device]
                 ids = ttdf["keywordId"].tolist()
                 ids = list(set(ids))
-                res = sem_service.get_keyword(self, accessToken, request_body=None)
+                ids = json.dumps(ids)
+                payload = "format=json&idList=" + ids
+                res = await sem_service.get_keyword(accessToken, request_body=payload)
                 sub_data = res["keywordList"]
                 for sub in sub_data:
                     sub["type"] = device
                     sub["date"] = date
-                    # tuiguangzuid
-                    pass
                 data += sub_data
         cost = time.time()-start
         print("%s耗时==> %s s" % (method, cost))
@@ -124,6 +128,9 @@ class KeywordInfoReport(ReportBase):
             2. 清洗完数据之后，到此返回数据即可，数据可以缓存在csv文件中。
         '''
         report_data = pd.read_json(json.dumps(data))
+        tdf = df[['campaignId','keywordId']]
+        tdf.rename(columns={'keywordId':'id'}, inplace = True)
+        report_data = pd.merge(report_data, tdf, on='id')
         report_data['f_account_id'] = f_account_id
         fres = ReportBase.convert_sem_data_to_pt(report_data, self.f_source, self.f_company_id, self.f_email, fmap, self.f_account)
         fres.to_csv("/root/work/csv/keyword_info.csv")
