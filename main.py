@@ -14,8 +14,8 @@ if __name__ == "__main__":
             "pt_email":"1234@qq.com",
             "pt_company_id":"1234abcd",
             "pt_source":"e360",
-            "pt_data_from_date":"2018-07-21",
-            "pt_data_to_date":"2018-07-21",
+            "pt_data_from_date":"2018-07-30",
+            "pt_data_to_date":"2018-07-31",
             "apiKey":"ea0d3ab84a98e43100022282b223c44b",
             "apiSecret":"f37a3e8a1ceb222b492b9b4a108e3bc4",
             }

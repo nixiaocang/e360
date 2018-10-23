@@ -117,7 +117,7 @@ class KeywordInfoReport(ReportBase):
                     sub["date"] = date
                 data += sub_data
         cost = time.time()-start
-        print("%s耗时==> %s s" % (method, cost))
+        print("keyword_info耗时==> %s s" % cost)
         '''
             计算获取数据用时
         '''
@@ -133,5 +133,5 @@ class KeywordInfoReport(ReportBase):
         report_data = pd.merge(report_data, tdf, on='id')
         report_data['f_account_id'] = f_account_id
         fres = ReportBase.convert_sem_data_to_pt(report_data, self.f_source, self.f_company_id, self.f_email, fmap, self.f_account)
-        fres.to_csv("csv/%s.csv" % method)
+        fres.to_csv("csv/keyword_info.csv")
         return 2000, "OK"
