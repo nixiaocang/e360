@@ -23,13 +23,19 @@ class ReportBase(object):
             request_body = payload + device
 
             logger.info("########### Start to get_report_data, device: %s ###########" % device)
-
-            res = await sem_service.get_report_data(accessToken, method, request_body)
-            if "failures" in res:
-                raise Exception("获取report data失败：%s" % res['failures'][0]['message'])
+            page_info = await sem_service.get_report_data(accessToken, method+"Count", request_body)
+            if "failures" in page_info:
+                raise Exception("获取report data失败：%s" % page_info['failures'][0]['message'])
+            pages = page_info["totalPage"]
+            result = []
+            for page in range(pages):
+                temp_request_body = request_body + "&page=" + str(page+1)
+                res = await sem_service.get_report_data(accessToken, method, temp_request_body)
+                if "failures" in res:
+                    raise Exception("获取report data失败：%s" % res['failures'][0]['message'])
+                result += res[field]
 
             logger.info("########### Finished to get_report_data ###########")
-            result = res[field]
             data_info[device] = pd.read_json(json.dumps(result))
             data_info[device]['type'] = device
             data_info[device]['f_account_id'] = f_account_id

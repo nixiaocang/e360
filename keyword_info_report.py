@@ -99,6 +99,9 @@ class KeywordInfoReport(ReportBase):
         start = time.time()
         get_report_data_res = await ReportBase.get_report_data(sem_service, method, payload)
         df = get_report_data_res.get("report_data", None)
+        if df.empty:
+            return 2000, "OK"
+
         dates = pd.date_range(self.f_from_date, self.f_to_date)
         data = []
         for date in dates:
@@ -128,9 +131,9 @@ class KeywordInfoReport(ReportBase):
             2. 清洗完数据之后，到此返回数据即可，数据可以缓存在csv文件中。
         '''
         report_data = pd.read_json(json.dumps(data))
-        tdf = df[['campaignId','keywordId']]
+        tdf = df[['campaignId','keywordId', 'type', 'date']]
         tdf.rename(columns={'keywordId':'id'}, inplace = True)
-        report_data = pd.merge(report_data, tdf, on='id')
+        report_data = pd.merge(report_data, tdf, how='left', on=['id','type', 'date'])
         report_data['f_account_id'] = f_account_id
         fres = ReportBase.convert_sem_data_to_pt(report_data, self.f_source, self.f_company_id, self.f_email, fmap, self.f_account)
         fres.to_csv("csv/keyword_info.csv")
