@@ -3,6 +3,7 @@ import logging
 import logging.config
 import time
 import datetime
+import pandas as pd
 from _sem_service import E360SemService
 from _report_base import ReportBase
 
@@ -71,7 +72,7 @@ class SearchReport(ReportBase):
                 else:
                     start_date = self.f_from_date
                     end_date = self.f_to_date
-                payload = "startDate=%s&endDate=%s&format=json&type=" % (start_date, end_date)
+                payload =  (start_date, end_date)
                 res_code, res_message = await self._get_and_save_report_data_to_db(sem_service, "queryword",
                                                                                    payload)
         except Exception as e:
@@ -90,15 +91,24 @@ class SearchReport(ReportBase):
             开始获取数据计时
         '''
         start = time.time()
-        get_report_data_res = await ReportBase.get_report_data(sem_service, method, payload)
+        dates = pd.date_range(payload[0], payload[1])
+        df_dict = {}
+        retry_times = 0
+        for date in dates:
+            date = str(date)[:10]
+            payload = "startDate=%s&endDate=%s&format=json&type=" % (date, date)
+            get_report_data_res = await ReportBase.get_report_data(sem_service, method, payload)
+            retry_times += get_report_data_res.get("retry_times", 0)
+            temp_df = get_report_data_res.get("report_data", None)
+            temp_df['date'] = date
+            df_dict[date] = temp_df
+        report_data = pd.concat(df_dict.values())
         cost = time.time()-start
         print("%s耗时==> %s s" % (method, cost))
         '''
             计算获取数据用时
         '''
-        report_data_length = get_report_data_res.get("length", None)
-        report_data = get_report_data_res.get("report_data", None)
-        retry_times = get_report_data_res.get("retry_times", None)
+        report_data_length = len(report_data)
 
         '''
 
