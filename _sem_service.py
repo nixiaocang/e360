@@ -59,6 +59,9 @@ class E360SemService(object):
     async def get_keyword(self, accessToken, request_body=None):
         return await self.__execute(service="keyword", accessToken=accessToken, method="getInfoByIdList", request_body=request_body)
 
+    async def get_creative(self, accessToken, request_body=None):
+        return await self.__execute(service="creative", accessToken=accessToken, method="getInfoByIdList", request_body=request_body)
+
 def aes_encrypt(apiSecret, passwd):
     plaintext = hashlib.md5(passwd.encode(encoding="UTF-8")).hexdigest()
     key = apiSecret[:16]

@@ -1,8 +1,10 @@
+import json
 import asyncio
 import logging
 import logging.config
 import time
 import datetime
+import pandas as pd
 from _sem_service import E360SemService
 from _report_base import ReportBase
 
@@ -28,7 +30,9 @@ fmap = {
         "views": "f_impression_count",
         "creativeId": "f_creative_id",
         "title": "f_creative_title",
-        "type": "f_device"
+        "type": "f_device",
+        "destinationUrl":"f_creative_visit_url",
+        "mobileDestinationUrl":"f_creative_mob_visit_url",
     }
 
 
@@ -97,6 +101,22 @@ class CreativeReport(ReportBase):
         report_data_length = get_report_data_res.get("length", None)
         report_data = get_report_data_res.get("report_data", None)
         retry_times = get_report_data_res.get("retry_times", None)
+        # get_creative
+        auth_res = await sem_service.get_access_token()
+        accessToken = auth_res['accessToken']
+        ids = report_data["creativeId"].tolist()
+        ids = list(set(ids))
+        data = []
+        for i in range(0, len(ids), 1000):
+            temp = ids[i:i+1000]
+            idList = json.dumps(temp)
+            payload = "format=json&idList=" + idList
+            res = await sem_service.get_creative(accessToken, request_body=payload)
+            sub_data = res["creativeList"]
+            data += sub_data
+        df = pd.read_json(json.dumps(data))
+        df.rename(columns={'id':'creativeId'},inplace=True)
+        report_data = pd.merge(report_data, df, how='left', on=['creativeId'])
 
         '''
 
